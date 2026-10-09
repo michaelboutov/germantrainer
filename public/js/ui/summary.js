@@ -9,7 +9,7 @@ import { ring, countUp, sigil, magnetic, flashWord } from './kit.js';
 import { sfx } from '../sfx.js';
 import { speak } from '../voice.js';
 
-const verdict = (acc) => (acc >= 0.9 ? ['Ausgezeichnet!', 'Почти без ошибок — отличный раунд.'] : acc >= 0.7 ? ['Gut gemacht!', 'Хороший раунд. Ошибки — это точки роста.'] : acc >= 0.4 ? ['Weiter so!', 'Ты уже запомнил то, что пока не получилось — я верну это позже.'] : ['Das wird schon!', 'Сложный раунд — зато я знаю, что тебе повторять.']);
+const verdict = (acc) => (acc >= 0.9 ? ['Ausgezeichnet!', 'Почти без ошибок — отличный раунд.'] : acc >= 0.7 ? ['Gut gemacht!', 'Хороший раунд. Ошибки — это точки роста.'] : acc >= 0.4 ? ['Weiter so!', 'Не всё получилось — зато я запомнил, что тебе повторить.'] : ['Das wird schon!', 'Сложный раунд — зато я знаю, что тебе повторять.']);
 const fmtTime = (ms) => { const m = Math.max(1, Math.round(ms / 60000)); return `${m} мин`; };
 
 export async function mount(app, { summary, mode, skillId }) {

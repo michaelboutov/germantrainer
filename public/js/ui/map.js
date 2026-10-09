@@ -7,6 +7,7 @@ import { ring, sigil, fadeOut, stagger } from './kit.js';
 import { spotlight } from '../util.js';
 import { shell } from './shell.js';
 import { weakestSkills } from '../engine/picker.js';
+import { progressPanel } from './progress.js';
 
 const STATUS = { locked: ['закрыто', 'lock'], new: ['новое', 'sparkles'], learning: ['учим', 'brain'], practiced: ['почти освоено', 'target'], mastered: ['освоено', 'check'], review: ['пора повторить', 'refresh'] };
 
@@ -39,6 +40,7 @@ export async function mount(app) {
   const root = h('section.screen.page', header,
     h('div.page-body',
       h('div', h('div.eyebrow', 'Karte'), h('h1.display.page-title', 'Правила'), h('p.page-sub', 'Всё, что знает тренажёр. Нажми на карточку — прочитай правило и потренируйся. Новые правила открываются сами, когда ты уверенно освоил предыдущие.')),
+      progressPanel(),
       focus.length ? h('div.glass.focus-card', h('span', { html: icon('target', 22) }), h('div.grow', h('b', 'Сейчас важнее всего: '), focus.map((s, i) => [i ? ', ' : '', h('a.fc-link', { onclick: (e) => app.startSession({ mode: 'skill', skillId: s.id }, e.currentTarget) }, s.title)])), h('button.btn.sm.primary', { onclick: (e) => app.startSession({ mode: 'flow' }, e.currentTarget) }, 'Умный раунд')) : null,
       ...sections),
     bottom);

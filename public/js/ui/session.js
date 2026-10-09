@@ -8,7 +8,7 @@ import * as model from '../engine/model.js';
 import { mountExercise } from './ex/index.js';
 import { speak, stopSpeaking, prefetch, getAudio, voiceAvailable } from '../voice.js';
 import { VoiceInput } from '../mic.js';
-import { explainMistake, moreSentences, canGenerateNow } from '../ai.js';
+import { explainMistake, moreSentences, mayGenerateFor } from '../ai.js';
 import { getSettings, aiReady, describeError } from '../gemini.js';
 import { sfx } from '../sfx.js';
 import { ring, flashWord, confirmDialog, toast } from './kit.js';
@@ -246,8 +246,9 @@ export async function mount(app, params = {}) {
 
   // AI: keep fresh material coming for the rule you're on (never blocks the UI)
   function maybeFresh(skillId, afterAnswer = false) {
-    if (!aiReady() || !SKILL[skillId] || !canGenerateNow()) return;
-    if (!session.needsFresh(skillId)) return;
+    if (!aiReady() || !SKILL[skillId] || !session.needsFresh(skillId)) return;
+    const runningLow = !session.hasUnseen(skillId);
+    if (!mayGenerateFor(skillId, runningLow)) return;
     moreSentences(skillId, { n: 8 }).then((n) => { if (n && !gone) toast(`Gemini придумал ${n} новых предложений для «${SKILL[skillId].title}»`, { kind: 'info', ms: 2600 }); }).catch(() => {});
   }
 

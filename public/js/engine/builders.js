@@ -534,7 +534,12 @@ const optLabel = (w) => label(w);
 export function buildWord(w, tier, ctx = {}) {
   const same = allWords().filter((x) => x.kind === w.kind && x.id !== w.id);
   const nounish = w.kind === 'n';
-  const decoys = (n, fn = optLabel) => shuffle(same).filter((x) => fn(x) !== fn(w)).slice(0, n);
+  // wrong options: all different from each other and from the right one (two words may share a translation)
+  const decoys = (n, fn = optLabel) => {
+    const seen = new Set([fn(w)]); const out = [];
+    for (const x of shuffle(same)) { const k = fn(x); if (!seen.has(k)) { seen.add(k); out.push(x); if (out.length >= n) break; } }
+    return out;
+  };
   if (w.kind === 'p') return buildPhrase(w, tier, ctx);
   switch (tier) {
     case 1: {
@@ -547,7 +552,7 @@ export function buildWord(w, tier, ctx = {}) {
     }
     case 2: {
       const r = Math.random();
-      if (r < 0.45 && decoys(3).length >= 3) return wbase(w, 'choice', 2, { ask: 'Как по-русски?', sentence: optLabel(w), big: true, options: shuffle([w.ru, ...decoys(3).map((x) => x.ru)]), answer: w.ru, emoji: w.emoji, say: label(w), speakFirst: true });
+      if (r < 0.45 && decoys(3, (x) => x.ru).length >= 3) return wbase(w, 'choice', 2, { ask: 'Как по-русски?', sentence: optLabel(w), big: true, options: shuffle([w.ru, ...decoys(3, (x) => x.ru).map((x) => x.ru)]), answer: w.ru, emoji: w.emoji, say: label(w), speakFirst: true });
       if (decoys(3).length >= 3) return wbase(w, 'choice', 2, { ask: 'Как по-немецки?', sentence: w.ru, big: true, options: shuffle([optLabel(w), ...decoys(3).map(optLabel)]), answer: optLabel(w), emoji: w.emoji });
       return wbase(w, 'flash', 1, { ask: 'Запомни слово', word: w, strand: SK_W });
     }

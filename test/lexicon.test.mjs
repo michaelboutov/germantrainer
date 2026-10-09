@@ -73,3 +73,10 @@ test('lexicon is well-formed', () => {
   for (const [k, m] of Object.entries(MODALS)) assert.equal(m.pres.length, 6, k);
   assert.ok(NOUNS.length > 150 && VERBS.length > 60);
 });
+
+test('no two words of the same kind share a translation (a quiz must have one right answer)', () => {
+  const byKind = {};
+  for (const w of [...NOUNS, ...VERBS, ...ADJECTIVES]) { const k = `${w.kind}|${w.ru}`; (byKind[k] ||= []).push(w.de); }
+  const dups = Object.entries(byKind).filter(([, v]) => v.length > 1);
+  assert.deepEqual(dups, []);
+});

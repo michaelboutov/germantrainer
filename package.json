@@ -12,7 +12,8 @@
     "dev": "node --watch server.js",
     "mock": "node scripts/mock-gemini.mjs",
     "vendor": "node scripts/vendor.mjs",
-    "test": "node --test \"test/**/*.test.mjs\""
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "qa": "node scripts/qa-bank.mjs"
   },
   "dependencies": {
     "dotenv": "^16.6.1",

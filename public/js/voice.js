@@ -58,8 +58,8 @@ export async function speak(text, { slow } = {}) {
   if (aiReady()) a = await getAudio(text);
   if (my !== token) return; // something newer started
   if (a) await narrator.load({ blob: a.blob, text, lang: 'de-DE', duration: a.duration });
-  else if (hasDeviceGerman() || !aiReady()) await narrator.load({ text, lang: 'de-DE' });
-  else return;
+  else if (hasDeviceGerman()) await narrator.load({ text, lang: 'de-DE' });
+  else return; // no German voice anywhere: stay silent rather than read German with an English voice
   await new Promise((resolve) => {
     const offEnd = narrator.on('end', done); const offSt = narrator.on('state', (s) => { if (s === 'idle') done(); });
     function done() { offEnd(); offSt(); resolve(); }
@@ -67,4 +67,5 @@ export async function speak(text, { slow } = {}) {
   });
 }
 export function stopSpeaking() { token++; narrator.stop(); }
-if (typeof speechSynthesis !== 'undefined') speechSynthesis.addEventListener?.('voiceschanged', () => {});
+// browsers load the device voices lazily — kick that off now so hasDeviceGerman() is right by the first lesson
+if (typeof speechSynthesis !== 'undefined') { try { speechSynthesis.getVoices(); speechSynthesis.addEventListener?.('voiceschanged', () => {}); } catch { /* ignore */ } }

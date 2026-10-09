@@ -44,7 +44,17 @@ Return JSON: {"why":"…","rule":"the rule in one short Russian sentence","tip":
 
 // ── more practice sentences (the bank format) ───────────────────────────────────────────────
 let lastGen = 0;
+const lastBySkill = new Map();
 export const canGenerateNow = () => aiReady() && Date.now() - lastGen > 8000;
+/**
+ * Budget guard for background generation: at most one batch per rule per 15 minutes (2 when the rule has almost run
+ * out of material), and never beyond 48 AI sentences per rule — so a streak of mistakes can't burn API calls.
+ */
+export function mayGenerateFor(skillId, urgent = false) {
+  if (!canGenerateNow()) return false;
+  if ((state.aiBank[skillId]?.length || 0) >= 48) return false;
+  return Date.now() - (lastBySkill.get(skillId) || 0) > (urgent ? 2 : 15) * 60000;
+}
 export function validItem(o, existing = new Set()) {
   if (!o || typeof o.de !== 'string' || typeof o.ru !== 'string') return null;
   const p = parseItem(o.de.trim(), o.ru.trim(), (o.note || '').trim().slice(0, 220));
@@ -82,7 +92,7 @@ ${items.map((it, i) => `${i + 1}. ${it.de}  |  ${it.ru}`).join('\n')}`;
 export async function moreSentences(skillId, { n = 8, focus = [] } = {}) {
   const sk = SKILL[skillId];
   if (!sk) throw new Error('unknown skill');
-  lastGen = Date.now();
+  lastGen = Date.now(); lastBySkill.set(skillId, Date.now());
   const have = itemsOf(skillId); const seen = new Set(have.map((i) => norm(i.full)));
   const confs = focus.length ? focus : topConfusions(12).filter((c) => c.skill === skillId).map((c) => c.pair).slice(0, 4);
   const sample = have.slice(-6).map((i) => i.de).join('\n');
@@ -185,12 +195,12 @@ At most 3 focus items, the weakest-and-most-useful first.`;
 
 // ── conversation ────────────────────────────────────────────────────────────────────────────
 export const SCENARIOS = [
-  { id: 'cafe', emoji: '☕', title: 'В кафе', brief: 'Ты в кафе в Берлине. Ты — официантка/официант Lena, а пользователь — гость.' },
-  { id: 'smalltalk', emoji: '👋', title: 'Знакомство', brief: 'Ты Lena, новая знакомая. Знакомишься, спрашиваешь о жизни, работе, хобби.' },
-  { id: 'doctor', emoji: '🩺', title: 'У врача', brief: 'Ты врач в приёмной. Спрашиваешь, что болит, как давно, даёшь простые советы.' },
-  { id: 'flat', emoji: '🏠', title: 'Поиск квартиры', brief: 'Ты арендодатель. Показываешь квартиру и отвечаешь на вопросы о ней.' },
-  { id: 'station', emoji: '🚆', title: 'На вокзале', brief: 'Ты сотрудница справочной на вокзале. Помогаешь с билетами и маршрутом.' },
-  { id: 'free', emoji: '💬', title: 'Свободно', brief: 'Ты Lena, дружелюбный собеседник. Говорим на любую повседневную тему.' },
+  { id: 'cafe', emoji: '☕', title: 'В кафе', brief: 'Ты в кафе в Берлине. Ты — официантка Lena, а пользователь — гость.', hint: 'Ты — гость, Lena — официантка' },
+  { id: 'smalltalk', emoji: '👋', title: 'Знакомство', brief: 'Ты Lena, новая знакомая. Знакомишься, спрашиваешь о жизни, работе, хобби.', hint: 'Познакомься и расскажи о себе' },
+  { id: 'doctor', emoji: '🩺', title: 'У врача', brief: 'Ты врач в приёмной. Спрашиваешь, что болит, как давно, даёшь простые советы.', hint: 'Ты — пациент, Lena — врач' },
+  { id: 'flat', emoji: '🏠', title: 'Поиск квартиры', brief: 'Ты арендодатель. Показываешь квартиру и отвечаешь на вопросы о ней.', hint: 'Ты ищешь квартиру' },
+  { id: 'station', emoji: '🚆', title: 'На вокзале', brief: 'Ты сотрудница справочной на вокзале. Помогаешь с билетами и маршрутом.', hint: 'Купи билет и узнай маршрут' },
+  { id: 'free', emoji: '💬', title: 'Свободно', brief: 'Ты Lena, дружелюбный собеседник. Говорим на любую повседневную тему.', hint: 'Любая повседневная тема' },
 ];
 export async function chatTurn({ scenario, history, userText }) {
   const hist = history.slice(-10).map((m) => `${m.role === 'user' ? 'Learner' : 'Lena'}: ${m.de || m.text}`).join('\n');

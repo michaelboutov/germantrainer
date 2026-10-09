@@ -143,7 +143,7 @@ const V = [
   ['bringen', 'приносить', { pp: 'gebracht' }, 'a2'], ['kennen', 'знать (кого-то)', { pp: 'gekannt' }, 'a1'], ['rufen', 'звать, кричать', { pp: 'gerufen' }, 'a2'],
   ['waschen', 'мыть', { du: 'wäschst', er: 'wäscht', pp: 'gewaschen' }, 'a2'], ['halten', 'держать, останавливаться', { du: 'hältst', er: 'hält', pp: 'gehalten' }, 'a2'],
   ['verstehen', 'понимать', { pp: 'verstanden' }, 'a1'], ['vergessen', 'забывать', { du: 'vergisst', er: 'vergisst', pp: 'vergessen' }, 'a2'],
-  ['bekommen', 'получать', { pp: 'bekommen' }, 'a1'], ['beginnen', 'начинать', { pp: 'begonnen' }, 'a2'], ['gefallen', 'нравиться', { du: 'gefällst', er: 'gefällt', pp: 'gefallen' }, 'a2'],
+  ['bekommen', 'получать', { pp: 'bekommen' }, 'a1'], ['beginnen', 'начинаться, начинать', { pp: 'begonnen' }, 'a2'], ['gefallen', 'нравиться', { du: 'gefällst', er: 'gefällt', pp: 'gefallen' }, 'a2'],
   ['lassen', 'позволять, оставлять', { du: 'lässt', er: 'lässt', pp: 'gelassen' }, 'a2'], ['fallen', 'падать', { du: 'fällst', er: 'fällt', pp: 'gefallen', aux: 's' }, 'a2'],
   // separable
   ['aufstehen', 'вставать', { base: 'stehen', sep: 'auf', aux: 's' }, 'a1'], ['einkaufen', 'делать покупки', { base: 'kaufen', sep: 'ein' }, 'a1'],
@@ -151,7 +151,7 @@ const V = [
   ['ankommen', 'прибывать', { base: 'kommen', sep: 'an', aux: 's' }, 'a1'], ['abfahren', 'отправляться', { base: 'fahren', sep: 'ab', aux: 's' }, 'a1'],
   ['einsteigen', 'садиться (в транспорт)', { base: 'steigen', sep: 'ein', aux: 's' }, 'a1'], ['aussteigen', 'выходить (из транспорта)', { base: 'steigen', sep: 'aus', aux: 's' }, 'a1'],
   ['fernsehen', 'смотреть телевизор', { base: 'sehen', sep: 'fern' }, 'a1'], ['aufräumen', 'убирать (порядок)', { base: 'räumen', sep: 'auf' }, 'a2'],
-  ['anfangen', 'начинать', { base: 'fangen', sep: 'an' }, 'a1'], ['einladen', 'приглашать', { base: 'laden', sep: 'ein' }, 'a1'],
+  ['anfangen', 'начать, приступить', { base: 'fangen', sep: 'an' }, 'a1'], ['einladen', 'приглашать', { base: 'laden', sep: 'ein' }, 'a1'],
   ['mitnehmen', 'брать с собой', { base: 'nehmen', sep: 'mit' }, 'a2'], ['abholen', 'забирать (кого-то)', { base: 'holen', sep: 'ab' }, 'a2'],
   ['aufwachen', 'просыпаться', { base: 'wachen', sep: 'auf', aux: 's' }, 'a2'], ['umziehen', 'переезжать', { base: 'ziehen', sep: 'um', aux: 's' }, 'a2'],
   ['ausgehen', 'выходить гулять', { base: 'gehen', sep: 'aus', aux: 's' }, 'a2'], ['anziehen', 'надевать', { base: 'ziehen', sep: 'an' }, 'a2'],

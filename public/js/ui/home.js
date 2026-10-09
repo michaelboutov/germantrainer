@@ -49,7 +49,7 @@ export async function mount(app) {
   const goal = s.dailyGoal || 20; const done = ov.today.n;
   const focus = weakestSkills(1)[0];
   const strip = h('div.today',
-    h('div.t-item', ring(Math.min(1, done / goal), { size: 44, stroke: 5, label: '' }), h('div', h('b', `${done}/${goal}`), h('small', 'заданий сегодня'))),
+    h('div.t-item', ring(Math.min(1, done / goal), { size: 44, stroke: 5, label: '' }), h('div', h('b', done >= goal ? 'Цель дня ✓' : `${done}/${goal}`), h('small', done >= goal ? `${done} заданий сегодня` : 'заданий сегодня'))),
     h('div.t-item', h('span.t-ic.fire', { html: icon('flame', 22) }), h('div', h('b', ov.streak || 0), h('small', 'дней подряд'))),
     focus ? h('button.t-item.focus', { onclick: (e) => app.startSession({ mode: 'skill', skillId: focus.id }, e.currentTarget) }, h('span.t-ic', { style: { color: palOf(focus.id)[0] }, html: icon('target', 22) }), h('div', h('b', focus.title), h('small', first ? 'с этого можно начать' : 'сегодняшний фокус'))) : null);
 

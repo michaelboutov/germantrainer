@@ -159,7 +159,7 @@ export function logMistake(m) {
   state.mistakes.push({ t: Date.now(), ...m });
   if (state.mistakes.length > 400) state.mistakes.splice(0, state.mistakes.length - 400);
   const g = String(m.given ?? '').trim(); const e = String(m.expected ?? '').trim();
-  if (g && e && g !== e && g.split(/\s+/).length <= 2 && e.split(/\s+/).length <= 2 && g.length < 18) {
+  if (g && e && g !== e && g.split(/\s+/).length <= 2 && e.split(/\s+/).length <= 2 && g.length < 18 && e.length < 24) {
     const k = `${g.toLowerCase()}→${e.toLowerCase()}`;
     const c = state.profile.conf[k] || (state.profile.conf[k] = { n: 0, last: 0, skill: m.skill });
     c.n++; c.last = Date.now();

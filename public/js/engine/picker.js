@@ -35,7 +35,9 @@ export class Session {
   next() {
     if (this.script?.length) return this._remember(this.script.shift());
     // 1) retries that are due
-    const qi = this.queue.findIndex((q) => q.at <= this.done);
+    // (once the round's quota is reached, missed-twice items are served right away so the round can close)
+    const over = this.done >= this.size;
+    const qi = this.queue.findIndex((q) => q.at <= this.done || (over && q.final));
     if (qi >= 0) {
       const q = this.queue.splice(qi, 1)[0];
       const ex = rebuildKey(q.key, q.tier, this.ctx);
@@ -188,6 +190,8 @@ export class Session {
     return out;
   }
 
+  /** Are there at least 3 sentences of this rule you have not seen yet? */
+  hasUnseen(skillId) { return itemsOf(skillId).filter((i) => !state.items[i.key]?.seen).length >= 3; }
   /** Does this rule need fresh material (AI) — it is nearly used up, or you keep missing it. */
   needsFresh(skillId) {
     if (!SKILL[skillId]) return false;

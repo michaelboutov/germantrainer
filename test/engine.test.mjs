@@ -118,3 +118,22 @@ test('mistake mode brings your errors back', () => {
   const first = m.next();
   assert.ok(first, 'a mistake session should have material');
 });
+
+test('a round always closes, even when everything is answered wrong (twice-missed items are served at the end)', () => {
+  M.reset();
+  const s = new Session({ size: 6, ctx: CTX });
+  let n = 0;
+  while (!s.finished && n < 60) { const ex = s.next(); assert.ok(ex); s.report(ex, { correct: false, score: 0, given: 'x', expected: 'y', errors: [{ given: 'x', expected: 'y' }] }); n++; }
+  assert.ok(s.finished, `round did not close after ${n} tasks`);
+  assert.ok(n <= 6 + 2 * 6, `round was too long: ${n} tasks`);
+  assert.ok(s.summary().wrong.length > 0);
+});
+
+test('mastered rules are reviewed far less often than rules being learned', () => {
+  M.reset();
+  for (const id of ['a1.artikel', 'a1.sein-haben', 'a1.praesens']) { const sk = M.skillState(id); sk.p = 0.95; sk.n = 20; sk.masteredAt = Date.now(); sk.last = Date.now(); sk.recent = Array(12).fill(1); }
+  const s = new Session({ size: 400, ctx: CTX }); const count = {};
+  for (let i = 0; i < 300; i++) { const ex = s.next(); if (!ex) break; count[ex.skill] = (count[ex.skill] || 0) + 1; }
+  const mastered = ['a1.artikel', 'a1.sein-haben', 'a1.praesens'].reduce((a, k) => a + (count[k] || 0), 0);
+  assert.ok(mastered < 60, `mastered rules got ${mastered}/300 tasks`);
+});

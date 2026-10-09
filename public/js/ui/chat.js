@@ -76,7 +76,7 @@ export async function mount(app) {
     if (busy) return;
     scenario = sc; history = []; stopSpeaking();
     [...scenes.children].forEach((b) => b.classList.toggle('on', b.dataset.id === sc.id));
-    title.replaceChildren(h('b', `Lena · ${sc.title}`), h('small', sc.brief.replace(/^Ты /, 'Сцена: ты ').slice(0, 90)));
+    title.replaceChildren(h('b', `Lena · ${sc.title}`), h('small', sc.hint || ''));
     msgs.replaceChildren(); suggestions([]); busy = true; setEnabled(false);
     const t = typing(); app.scene.setThinking(true);
     try { const out = await chatStart(sc); t.remove(); addAI(out.reply); suggestions(out.suggestions); }
