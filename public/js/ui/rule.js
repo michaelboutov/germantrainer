@@ -1,5 +1,5 @@
 // The rule card: what the rule says, a mnemonic, examples — and a way to practise it right now.
-import { h } from '../util.js';
+import { h, esc } from '../util.js';
 import { icon } from '../icons.js';
 import { SKILL, LEVELS, palOf } from '../content/skills.js';
 import { itemsOf } from '../engine/builders.js';
@@ -15,7 +15,7 @@ export function openRule(app, skillId) {
   const stName = { locked: 'пока закрыто', new: 'новое', learning: 'учим', practiced: 'почти освоено', mastered: 'освоено', review: 'пора повторить' }[st];
   const ex = () => itemsOf(skillId).filter((i) => i.src !== 'ai').slice(0, 4).concat(itemsOf(skillId).filter((i) => i.src === 'ai').slice(-2));
   const exBox = h('div.rule-ex');
-  const drawEx = () => { exBox.replaceChildren(...ex().map((i) => h('div.rule-ex-row', h('div.rx-de.story', { html: i.de.replace(/\{([^}|]+)[^}]*\}/, '<mark>$1</mark>') }), h('div.rx-ru', i.ru), h('button.speak-btn', { 'aria-label': 'Послушать', html: icon('volume', 16), onclick: () => speak(i.full) })))); };
+  const drawEx = () => { exBox.replaceChildren(...ex().map((i) => h('div.rule-ex-row', h('div.rx-de.story', { html: esc(i.de).replace(/\{([^}|]+)[^}]*\}/, '<mark>$1</mark>') }), h('div.rx-ru', i.ru), h('button.speak-btn', { 'aria-label': 'Послушать', html: icon('volume', 16), onclick: () => speak(i.full) })))); };
   drawEx();
   const more = h('button.btn', { disabled: !aiReady(), title: aiReady() ? '' : 'Нужен ключ Gemini', onclick: async () => {
     if (!canGenerateNow()) { toast('Подожди секунду…'); return; }

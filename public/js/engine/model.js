@@ -71,11 +71,10 @@ if (typeof addEventListener === 'function') addEventListener('pagehide', () => {
 // ── skills ─────────────────────────────────────────────────────────────────────────────────
 export function skillState(id) {
   const P = state.profile;
-  if (!P.skills[id]) {
-    const lvl = SKILL[id]?.lvl || 'a2';
-    const pri = PRIORS[getSettings().level] || PRIORS.a2;
-    P.skills[id] = { p: pri[lvl] ?? 0.1, n: 0, c: 0, recent: [], last: 0, masteredAt: 0, wrong: 0 };
-  }
+  const lvl = SKILL[id]?.lvl || 'a2';
+  const prior = (PRIORS[getSettings().level] || PRIORS.a2)[lvl] ?? 0.1;
+  if (!P.skills[id]) P.skills[id] = { p: prior, n: 0, c: 0, recent: [], last: 0, masteredAt: 0, wrong: 0 };
+  else if (!P.skills[id].n) P.skills[id].p = prior; // an untouched rule follows your chosen starting level
   return P.skills[id];
 }
 

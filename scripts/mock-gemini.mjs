@@ -50,6 +50,8 @@ function textAnswer(prompt) {
     case 'coach_report': return JSON.stringify({ headline: 'Dativ — твоя точка роста', praise: 'Ты стабильно решаешь задания по порядку слов.', insights: ['Чаще всего ты путаешь den и dem.', 'Артикли женского рода даются легче, чем мужского.'], focus: [{ skill: 'a2.dativ', why: 'самая частая ошибка' }, { skill: 'a2.wechsel', why: 'Wo? / Wohin?' }], tip: 'Читай вслух предложения с dem/der — на слух ошибки слышнее.' });
     case 'chat_start': return JSON.stringify({ reply: { de: 'Guten Tag! Was möchten Sie trinken?', ru: 'Добрый день! Что бы Вы хотели выпить?' }, suggestions: ['Ich möchte einen Kaffee, bitte.', 'Haben Sie Tee?', 'Was empfehlen Sie?'] });
     case 'chat_turn': return JSON.stringify({ reply: { de: 'Sehr gern! Möchten Sie auch ein Stück Kuchen?', ru: 'С удовольствием! Хотите ещё кусочек пирога?' }, correction: /mir/.test(prompt) ? { needed: false } : { needed: true, corrected: 'Ich möchte einen Kaffee, bitte.', explanation: 'Kaffee — мужской род, в Akkusativ: einen Kaffee.', skill: 'a1.akkusativ', wrong: 'ein Kaffee', right: 'einen Kaffee' }, suggestions: ['Ja, gern.', 'Nein, danke.', 'Was kostet das?'] });
+    case 'enrich_word': return JSON.stringify({ example: { de: 'Der Tisch steht in der Küche.', ru: 'Стол стоит на кухне.' }, mnemo: 'Tisch звучит как «тиш» — за столом все затихают. И он мужского рода: der.' });
+    case 'verify_items': return 'NONE';
     case 'ask_tutor': return 'Короткое правило: после **mit** всегда Dativ.\n\n• mit **dem** Bus\n• mit **der** Freundin\n\nМнемоника: aus-bei-mit-nach-seit-von-zu.';
     default: return 'ok';
   }

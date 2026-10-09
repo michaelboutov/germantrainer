@@ -8,7 +8,8 @@ import * as model from '../engine/model.js';
 import { mountExercise } from './ex/index.js';
 import { speak, stopSpeaking, prefetch, getAudio, voiceAvailable } from '../voice.js';
 import { VoiceInput } from '../mic.js';
-import { explainMistake, moreSentences, mayGenerateFor } from '../ai.js';
+import { explainMistake, moreSentences, mayGenerateFor, enrichWord } from '../ai.js';
+import { wordById } from '../engine/builders.js';
 import { getSettings, aiReady, describeError } from '../gemini.js';
 import { sfx } from '../sfx.js';
 import { ring, flashWord, confirmDialog, toast } from './kit.js';
@@ -170,6 +171,10 @@ export async function mount(app, params = {}) {
     if (kind === 'right' && ex.note && Math.random() < 0.3) body.append(h('div.fb-note', { html: `💡 ${esc(ex.note)}` }));
     const explainHost = h('div');
     body.append(explainHost);
+    // vocabulary: a memory trick (ready-made or invented by Gemini on demand)
+    const wordObj = kind !== 'right' && ex.word ? wordById(ex.word) : null;
+    const trick = (w) => h('div.explain-card', w.mnemo ? h('div.tip', h('span', { html: icon('bulb', 18) }), w.mnemo) : null, w.ex?.de ? h('div.ex2.story', w.ex.de, h('small', w.ex.ru || '')) : null);
+    if (wordObj?.mnemo) explainHost.append(trick(wordObj));
 
     const title = kind === 'right' ? (HYPE[session.combo] && session.combo > 4 ? 'Wahnsinn!' : pick(RIGHT)) : kind === 'part' ? 'Fast geschafft' : r.gaveUp ? 'Das merken wir uns' : r.close ? 'Fast!' : 'Nicht ganz';
     const xp = h('div.fb-xp', `+${rep.xp} XP`);
@@ -179,9 +184,17 @@ export async function mount(app, params = {}) {
       const eb = h('button.btn', { type: 'button', onclick: () => explain(eb, explainHost, r) }, h('span', { html: icon('sparkles', 16) }), 'Объясни');
       actions.append(eb);
     }
+    if (wordObj && !wordObj.mnemo && aiReady()) {
+      const tb = h('button.btn', { type: 'button', onclick: async () => {
+        tb.disabled = true; explainHost.replaceChildren(h('div.explain-card', h('div.shimmer'), h('div.shimmer', { style: { width: '70%' } }))); app.scene.setThinking(true);
+        try { await enrichWord(wordObj); explainHost.replaceChildren(trick(wordById(wordObj.id))); } catch (e) { explainHost.replaceChildren(h('div.fb-note', describeError(e))); tb.disabled = false; }
+        app.scene.setThinking(false);
+      } }, h('span', { html: icon('bulb', 16) }), 'Лайфхак');
+      actions.append(tb);
+    }
     if (ex.full && !ex.hideText && ex.type !== 'flash') actions.append(h('button.btn.ghost', { type: 'button', onclick: () => speak(ex.full) }, h('span', { html: icon('volume', 16) }), 'Ещё раз'));
     actions.append(h('div.grow'), next);
-    sheet = h('aside.fb.' + kind, h('div.fb-head', h('div.fb-badge', { html: icon(kind === 'right' ? 'check' : kind === 'part' ? 'target' : 'close', 24) }), h('div.fb-title', title), xp), body, actions);
+    sheet = h('aside.fb.' + kind, { role: 'status', 'aria-live': 'polite' }, h('div.fb-head', h('div.fb-badge', { html: icon(kind === 'right' ? 'check' : kind === 'part' ? 'target' : 'close', 24) }), h('div.fb-title', title), xp), body, actions);
     root.append(sheet);
     window.gsap?.fromTo(sheet, { yPercent: 105 }, { yPercent: 0, duration: 0.5, ease: 'power3.out' });
     setTimeout(() => next.focus({ preventScroll: true }), 80);

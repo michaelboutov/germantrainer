@@ -57,6 +57,7 @@ export function mayGenerateFor(skillId, urgent = false) {
 }
 export function validItem(o, existing = new Set()) {
   if (!o || typeof o.de !== 'string' || typeof o.ru !== 'string') return null;
+  if (/[<>]/.test(o.de + o.ru + (o.note || ''))) return null; // model output is data: never let markup in
   const p = parseItem(o.de.trim(), o.ru.trim(), (o.note || '').trim().slice(0, 220));
   if (!p) return null;
   if (p.full.split(/\s+/).length > 18 || p.full.length < 8) return null;
