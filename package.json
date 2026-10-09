@@ -1,0 +1,25 @@
+{
+  "name": "fluss-german-trainer",
+  "version": "1.0.0",
+  "description": "Fluss — an adaptive German trainer (A1–A2, with a peek at B1): drag-and-drop drills, spaced repetition, a mistake memory, and Gemini for explanations, new words, voice and pictures.",
+  "private": true,
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "mock": "node scripts/mock-gemini.mjs",
+    "vendor": "node scripts/vendor.mjs",
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "gsap": "^3.13.0",
+    "three": "^0.180.0"
+  }
+}
