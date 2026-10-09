@@ -1,0 +1,12 @@
+{
+  "name": "Fluss — Deutsch im Fluss",
+  "short_name": "Fluss",
+  "description": "Адаптивный тренажёр немецкого A1–A2 с ИИ",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4efe8",
+  "theme_color": "#f4efe8",
+  "icons": [{ "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
