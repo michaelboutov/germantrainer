@@ -18,7 +18,8 @@ import { buildFor, buildWord, buildWordMatch, buildPictureMatch, buildArticleRou
 const NEW_WORDS_PER_DAY = 6;
 
 export class Session {
-  constructor({ mode = 'flow', skillId = null, size = getSettings().roundSize || 10, ctx = {} } = {}) {
+  constructor({ mode = 'flow', skillId = null, size = getSettings().roundSize || 10, ctx = {}, script = null } = {}) {
+    this.script = script; // a fixed list of exercises to serve first (used by tests and demos)
     this.mode = mode; this.skillId = skillId; this.size = size;
     this.ctx = { voiceOk: false, speakOk: false, ...ctx, recentKeys: new Set() };
     this.done = 0; this.right = 0; this.xp = 0; this.combo = 0; this.bestCombo = 0;
@@ -32,6 +33,7 @@ export class Session {
 
   // ── choosing ─────────────────────────────────────────────────────────────────────────────
   next() {
+    if (this.script?.length) return this._remember(this.script.shift());
     // 1) retries that are due
     const qi = this.queue.findIndex((q) => q.at <= this.done);
     if (qi >= 0) {
@@ -197,6 +199,12 @@ export class Session {
     return { done: this.done, right: this.right, xp: this.xp, acc: this.done ? this.right / this.done : 0, bestCombo: this.bestCombo, mastered: [...new Set(this.mastered)],
       lost: [...new Set(this.lost)], newWords: [...this.newWords], wrong: this.wrong, skills: [...this.skillsTouched], ms: Date.now() - this.startedAt, level: levelOf(state.profile.xp), confusions: topConfusions(3) };
   }
+}
+
+/** The rules that deserve your attention right now (weak · forgotten · recently missed), most urgent first. */
+export function weakestSkills(n = 5) {
+  const probe = new Session({ size: 1 });
+  return SKILLS.filter((x) => isUnlocked(x.id)).map((x) => ({ x, w: probe._weight(x) })).sort((a, b) => b.w - a.w).slice(0, n).map((o) => o.x);
 }
 
 /** A short human line explaining why we are practising this rule right now. */

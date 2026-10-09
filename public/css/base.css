@@ -1,6 +1,6 @@
-/* ===== Echoes — "Daylight" design system =====
+/* ===== Fluss — "Daylight" design system (shared with the audio_rpg reference) =====
    Airy light stage, huge tight grotesque type, black pills, frosted white cards,
-   warm gradient washes tinted by the active world (Runway-style UI × BlueYard-style warmth). */
+   warm gradient washes tinted by the active rule (--c1/--c2/--c3 melt from palette to palette). */
 @property --c1 { syntax: '<color>'; inherits: true; initial-value: #8b7bff; }
 @property --c2 { syntax: '<color>'; inherits: true; initial-value: #35e0c2; }
 @property --c3 { syntax: '<color>'; inherits: true; initial-value: #e0b3ff; }

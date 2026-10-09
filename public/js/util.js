@@ -13,7 +13,7 @@ export function h(tag, props, ...children) {
       else el.id = part.slice(1);
     }
   }
-  if (props && (typeof props !== 'object' || props instanceof Node || Array.isArray(props))) {
+  if (props != null && props !== false && (typeof props !== 'object' || props instanceof Node || Array.isArray(props))) {
     children.unshift(props);
     props = null;
   }

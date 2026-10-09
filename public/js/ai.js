@@ -16,7 +16,7 @@ import { parseItem, itemsOf, allWords } from './engine/builders.js';
 import { norm } from './engine/check.js';
 
 const plain = (html) => String(html || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
-const SYS = 'You are the AI engine of "Fluss", a German trainer for a Russian-speaking learner (level A2, revising A1, peeking at B1). Be precise: wrong German is worse than no answer. Reply with JSON only when asked for JSON.';
+const SYS = 'You are the AI engine of "Fluss", a German trainer for a Russian-speaking learner (level A2, revising A1, peeking at B1). Be precise: wrong German is worse than no answer. Write Russian explanations in a warm, informal tone and address the learner as "ты" (never "вы"). Reply with JSON only when asked for JSON.';
 
 // ── explain a mistake ───────────────────────────────────────────────────────────────────────
 const explainCache = new Map();
@@ -56,6 +56,26 @@ export function validItem(o, existing = new Set()) {
   return p;
 }
 /**
+ * Second opinion: a stricter pass that throws out gap items where a "wrong" option is actually acceptable,
+ * the German is unnatural, or the translation is off. Returns the items that survive.
+ */
+export async function verifySentences(items) {
+  if (!items.length) return items;
+  const prompt = `TASK: verify_items
+You are a meticulous German examiner. Each item is a gap-fill sentence: {correct|wrong1|wrong2} — the FIRST option must be the ONLY grammatical choice in that sentence; the others must be clearly wrong (never acceptable alternatives, also not in a different but valid reading, e.g. singular vs plural, another tense, another meaning).
+Check each item: (a) first option gives a fully correct, natural sentence; (b) NO other option also yields a correct sentence; (c) the Russian matches the German.
+Report ONLY defective items, one per line, exactly: BAD <number> :: <reason>
+If all items are fine reply exactly: NONE
+ITEMS:
+${items.map((it, i) => `${i + 1}. ${it.de}  |  ${it.ru}`).join('\n')}`;
+  try {
+    const text = await genText({ system: SYS, prompt, temperature: 0, maxOutputTokens: 2500, thinking: 'low' });
+    const bad = new Set([...text.matchAll(/BAD\s+(\d+)/g)].map((m) => Number(m[1]) - 1));
+    return items.filter((_, i) => !bad.has(i));
+  } catch { return items; } // if the check itself fails, don't block — the items already passed local validation
+}
+
+/**
  * Ask Gemini for new sentences for a rule. Stored in the AI bank and used by the picker like built-in lines.
  * `focus` = confusion pairs to aim at, e.g. ["den→dem"].
  */
@@ -77,11 +97,15 @@ Do not repeat these sentences: ${have.slice(-8).map((i) => i.full).join(' / ')}
 Return JSON: {"items":[{"de":"…{…|…|…}…","ru":"…","note":"…"}]}`;
   const raw = await genJSON({ system: SYS, prompt, temperature: 1, maxOutputTokens: 4000, validate: (o) => { if (!Array.isArray(o.items)) throw new Error('bad'); return o; } });
   const bank = (state.aiBank[skillId] ||= []);
-  let added = 0;
+  const fresh = [];
   for (const o of raw.items) {
     const p = validItem(o, seen);
     if (!p) continue;
     seen.add(norm(p.full));
+    fresh.push(p);
+  }
+  let added = 0;
+  for (const p of await verifySentences(fresh)) {
     bank.push({ id: hash(p.full), de: p.de, ru: p.ru, note: p.note, t: Date.now() });
     added++;
   }
@@ -96,7 +120,7 @@ export async function newWords({ topic = '', level = 'a2', n = 8 } = {}) {
   const known = allWords().filter((w) => w.kind !== 'p').map((w) => w.de);
   const pool = known.sort(() => Math.random() - 0.5).slice(0, 80).join(', ');
   const prompt = `TASK: generate_words
-Invent ${n} useful German words for a Russian-speaking ${level.toUpperCase()} learner${topic ? ` on the topic "${topic}"` : ' from everyday life'}.
+Invent ${n + 4} useful German words for a Russian-speaking ${level.toUpperCase()} learner${topic ? ` on the topic "${topic}"` : ' from everyday life'}.
 Mostly nouns, plus a few verbs and adjectives. Pick words that are really useful and NOT in this list of known words: ${pool}
 For each word give:
  pos: "noun" | "verb" | "adj";
@@ -124,7 +148,21 @@ Return JSON: {"words":[{…}]}`;
       perfect: w.perfect || '', ai: true, added: Date.now(),
     });
   }
-  state.userWords.push(...out);
+  const picked = out.slice(0, n);
+  state.userWords.push(...picked);
+  save();
+  return picked;
+}
+
+// ── make a word memorable ───────────────────────────────────────────────────────────────────
+export async function enrichWord(word) {
+  const prompt = `TASK: enrich_word
+German word: ${word.kind === 'n' ? `${word.art} ${word.de}` : word.de} (${word.ru}).
+Give: a simple A1–A2 example sentence using it with its Russian translation, and a short, playful Russian memory trick (association, sound-alike, or a rule${word.kind === 'n' ? ' that helps remember the article' : ''}).
+Return JSON: {"example":{"de":"…","ru":"…"},"mnemo":"…"}`;
+  const out = await genJSON({ system: SYS, prompt, temperature: 0.9, maxOutputTokens: 500, validate: (o) => { if (!o.example?.de || !o.mnemo) throw new Error('bad'); return o; } });
+  const P = state.profile; (P.enrich ||= {})[word.id] = { ex: out.example, mnemo: out.mnemo };
+  if (word.ai) { const w = state.userWords.find((x) => x.id === word.id); if (w) { w.ex = out.example; w.mnemo = out.mnemo; } }
   save();
   return out;
 }

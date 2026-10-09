@@ -146,7 +146,11 @@ const KINDS = {
 
 // ───────────────────────────── vocabulary helpers ────────────────────────────────────────────
 export const allWords = () => [...NOUNS, ...VERBS, ...ADJECTIVES, ...PHRASES, ...state.userWords];
-export const wordById = (id) => WORD_BY_ID[id] || state.userWords.find((w) => w.id === id) || null;
+export const wordById = (id) => {
+  const w = WORD_BY_ID[id] || state.userWords.find((x) => x.id === id) || null;
+  const extra = w && state.profile?.enrich?.[id];
+  return extra ? { ...w, ex: w.ex || extra.ex, mnemo: w.mnemo || extra.mnemo } : w;
+};
 
 /** Prefer words you know least — new ones and recently-missed ones. */
 function pickWords(list, n, ctx = {}) {
